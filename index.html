@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoCalc | Modern Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧮</text></svg>">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes buttonPress {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .button-press {
+            animation: buttonPress 0.2s ease;
+        }
+        
+        /* Default (Light) Theme Variables */
+        :root {
+            --bg-primary: #f2f2f7;
+            --bg-secondary: #f2f2f7;
+            --text-primary: #000000;
+            --text-secondary: #8e8e93;
+            --accent-color: #007aff;
+            --number-btn: #ffffff;
+            --operator-btn: #f2f2f7;
+            --equals-btn: #007aff;
+        }
+        
+        /* Dark Theme Variables */
+        :root.theme-dark {
+            --bg-primary: #000000;
+            --bg-secondary: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #8e8e93;
+            --accent-color: #0a84ff;
+            --number-btn: #333333;
+            --operator-btn: #1c1c1e;
+            --equals-btn: #0a84ff;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Add color transition */
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col items-center justify-center transition-colors duration-300 bg-[var(--bg-primary)] text-[var(--text-primary)]">
+    <div class="w-full max-w-md p-5">
+        <div class="flex justify-between items-center mb-5">
+            <h1 class="text-xl font-medium text-[var(--text-secondary)]">Calculator</h1>
+            <div class="flex space-x-3">
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-[var(--bg-secondary)] transition-colors">
+                    <i class="fas fa-moon text-[var(--text-primary)]"></i>
+                </button>
+                <button id="modeToggle" class="px-3 py-1 rounded-full bg-[var(--bg-secondary)] text-sm font-medium transition-all text-[var(--text-primary)]">
+                    <span>Scientific</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <div id="history" class="text-right text-lg text-[var(--text-secondary)] h-7 mb-1 overflow-hidden leading-tight"></div>
+            <input id="display" type="text" readonly 
+                   class="w-full bg-transparent text-right text-5xl font-light outline-none selection:bg-[var(--accent-color)] leading-tight tracking-tight text-[var(--text-primary)]" 
+                   value="0">
+        </div>
+        
+        <div id="basicCalculator" class="grid grid-cols-4 gap-3 animate-fade-in">
+            <button class="function-btn bg-[var(--operator-btn)] text-[var(--accent-color)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="clear">
+                AC
+            </button>
+            <button class="function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="toggleSign">
+                +/-
+            </button>
+            <button class="function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="percentage">
+                %
+            </button>
+            <button class="operator-btn bg-[var(--accent-color)] text-white rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="/">
+                ÷
+            </button>
+            
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="7">
+                7
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="8">
+                8
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="9">
+                9
+            </button>
+            <button class="operator-btn bg-[var(--operator-btn)] text-[var(--accent-color)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="*">
+                ×
+            </button>
+            
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="4">
+                4
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="5">
+                5
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="6">
+                6
+            </button>
+            <button class="operator-btn bg-[var(--operator-btn)] text-[var(--accent-color)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="-">
+                −
+            </button>
+            
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="1">
+                1
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="2">
+                2
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="3">
+                3
+            </button>
+            <button class="operator-btn bg-[var(--operator-btn)] text-[var(--accent-color)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="+">
+                +
+            </button>
+            
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full h-full flex items-center justify-start pl-8 text-2xl font-medium col-span-2 shadow-sm active:opacity-80 transition-opacity" data-value="0">
+                0
+            </button>
+            <button class="number-btn bg-[var(--number-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value=".">
+                .
+            </button>
+            <button class="equals-btn bg-[var(--equals-btn)] text-white rounded-full aspect-square flex items-center justify-center text-2xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="=">
+                =
+            </button>
+        </div>
+        
+        <div id="scientificCalculator" class="grid grid-cols-5 gap-3 hidden">
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="sin">
+                sin
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="cos">
+                cos
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="tan">
+                tan
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="log">
+                log
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="ln">
+                ln
+            </button>
+            
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="asin">
+                sin⁻¹
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="acos">
+                cos⁻¹
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="atan">
+                tan⁻¹
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="pi">
+                π
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="e">
+                e
+            </button>
+            
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="pow">
+                xʸ
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="sqrt">
+                √
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="fact">
+                x!
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="exp">
+                EE
+            </button>
+            <button class="sci-function-btn bg-[var(--operator-btn)] text-[var(--text-primary)] rounded-full aspect-square flex items-center justify-center text-xl font-medium shadow-sm active:opacity-80 transition-opacity" data-value="mod">
+                mod
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const display = document.getElementById('display');
+            const history = document.getElementById('history');
+            const themeToggle = document.getElementById('themeToggle');
+            const modeToggle = document.getElementById('modeToggle');
+            const basicCalculator = document.getElementById('basicCalculator');
+            const scientificCalculator = document.getElementById('scientificCalculator');
+            
+            // Calculator state
+            let currentValue = '0';
+            let previousValue = '';
+            let operation = null;
+            let resetScreen = false;
+            let isScientific = false;
+            
+            // Set initial theme based on system preference or localStorage
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Apply initial theme classes
+            if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
+                document.documentElement.classList.add('theme-dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun text-[var(--text-primary)]"></i>';
+            } else {
+                document.documentElement.classList.remove('theme-dark'); // Ensure dark class is removed if not dark
+                // document.documentElement.classList.add('theme-light'); // No need to add theme-light explicitly, it's the default
+                themeToggle.innerHTML = '<i class="fas fa-moon text-[var(--text-primary)]"></i>';
+            }
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', () => {
+                if (document.documentElement.classList.contains('theme-dark')) {
+                    document.documentElement.classList.remove('theme-dark');
+                    localStorage.setItem('theme', 'light');
+                    themeToggle.innerHTML = '<i class="fas fa-moon text-[var(--text-primary)]"></i>';
+                } else {
+                    document.documentElement.classList.add('theme-dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeToggle.innerHTML = '<i class="fas fa-sun text-[var(--text-primary)]"></i>';
+                }
+            });
+            
+            // Calculator mode toggle
+            modeToggle.addEventListener('click', () => {
+                isScientific = !isScientific;
+                
+                if (isScientific) {
+                    modeToggle.innerHTML = '<span>Basic</span>';
+                    basicCalculator.classList.add('hidden');
+                    scientificCalculator.classList.remove('hidden');
+                    basicCalculator.classList.remove('animate-fade-in');
+                    scientificCalculator.classList.add('animate-fade-in');
+                } else {
+                    modeToggle.innerHTML = '<span>Scientific</span>';
+                    scientificCalculator.classList.add('hidden');
+                    basicCalculator.classList.remove('hidden');
+                    scientificCalculator.classList.remove('animate-fade-in');
+                    basicCalculator.classList.add('animate-fade-in');
+                }
+            });
+            
+            // Number buttons
+            document.querySelectorAll('.number-btn').forEach(button => {
+                button.addEventListener('click', () => appendNumber(button.dataset.value));
+            });
+            
+            // Function buttons (AC, +/-, %)
+            document.querySelectorAll('.function-btn').forEach(button => {
+                button.addEventListener('click', () => handleFunction(button.dataset.value));
+            });
+            
+            // Operator buttons (+, -, *, /)
+            document.querySelectorAll('.operator-btn').forEach(button => {
+                button.addEventListener('click', () => setOperation(button.dataset.value));
+            });
+            
+            // Equals button
+            document.querySelector('.equals-btn').addEventListener('click', () => calculate());
+            
+            // Scientific function buttons
+            document.querySelectorAll('.sci-function-btn').forEach(button => {
+                button.addEventListener('click', () => handleScientificFunction(button.dataset.value));
+            });
+            
+            // Handle keyboard input
+            document.addEventListener('keydown', handleKeyboardInput);
+            
+            // Helper functions
+            function updateDisplay() {
+                display.value = currentValue;
+                if (operation) {
+                    history.textContent = `${previousValue} ${operation} ${currentValue}`;
+                } else {
+                    history.textContent = previousValue || '';
+                }
+            }
+            
+            function appendNumber(number) {
+                if (currentValue === '0' || resetScreen) {
+                    currentValue = number;
+                    resetScreen = false;
+                } else {
+                    if (number === '.' && currentValue.includes('.')) return;
+                    currentValue += number;
+                }
+                updateDisplay();
+            }
+            
+            function handleFunction(func) {
+                switch (func) {
+                    case 'clear':
+                        currentValue = '0';
+                        previousValue = '';
+                        operation = null;
+                        break;
+                    case 'toggleSign':
+                        currentValue = (parseFloat(currentValue) * -1).toString();
+                        break;
+                    case 'percentage':
+                        currentValue = (parseFloat(currentValue) / 100).toString();
+                        break;
+                }
+                updateDisplay();
+            }
+            
+            function setOperation(op) {
+                if (operation !== null) calculate();
+                previousValue = currentValue;
+                operation = op;
+                resetScreen = true;
+                updateDisplay();
+            }
+            
+            function calculate() {
+                let result;
+                const prev = parseFloat(previousValue);
+                const current = parseFloat(currentValue);
+                
+                if (isNaN(prev) || isNaN(current)) return;
+                
+                switch (operation) {
+                    case '+':
+                        result = prev + current;
+                        break;
+                    case '-':
+                        result = prev - current;
+                        break;
+                    case '*':
+                        result = prev * current;
+                        break;
+                    case '/':
+                        result = prev / current;
+                        break;
+                    case '^': // For power
+                        result = Math.pow(prev, current);
+                        break;
+                    case '%': // For modulo
+                        result = prev % current;
+                        break;
+                    case 'EE': // For scientific notation (exponent)
+                        result = prev * Math.pow(10, current);
+                        break;
+                    default:
+                        return;
+                }
+                
+                currentValue = result.toString();
+                operation = null;
+                resetScreen = true;
+                updateDisplay();
+            }
+            
+            function handleScientificFunction(func) {
+                const value = parseFloat(currentValue);
+                let result;
+                
+                switch (func) {
+                    case 'sin':
+                        result = Math.sin(value);
+                        break;
+                    case 'cos':
+                        result = Math.cos(value);
+                        break;
+                    case 'tan':
+                        result = Math.tan(value);
+                        break;
+                    case 'asin':
+                        result = Math.asin(value);
+                        break;
+                    case 'acos':
+                        result = Math.acos(value);
+                        break;
+                    case 'atan':
+                        result = Math.atan(value);
+                        break;
+                    case 'log':
+                        result = Math.log10(value);
+                        break;
+                    case 'ln':
+                        result = Math.log(value);
+                        break;
+                    case 'sqrt':
+                        result = Math.sqrt(value);
+                        break;
+                    case 'fact':
+                        result = factorial(value);
+                        break;
+                    case 'pow':
+                        previousValue = currentValue;
+                        operation = '^';
+                        resetScreen = true;
+                        updateDisplay();
+                        return;
+                    case 'pi':
+                        currentValue = Math.PI.toString();
+                        updateDisplay();
+                        return;
+                    case 'e':
+                        currentValue = Math.E.toString();
+                        updateDisplay();
+                        return;
+                    case 'mod':
+                        operation = '%';
+                        previousValue = currentValue;
+                        resetScreen = true;
+                        updateDisplay();
+                        return;
+                    case 'exp':
+                        operation = 'EE';
+                        previousValue = currentValue;
+                        resetScreen = true;
+                        updateDisplay();
+                        return;
+                }
+                
+                currentValue = result.toString();
+                resetScreen = true;
+                updateDisplay();
+            }
+            
+            function factorial(n) {
+                if (n < 0) return NaN;
+                if (n === 0 || n === 1) return 1;
+                let result = 1;
+                for (let i = 2; i <= n; i++) {
+                    result *= i;
+                }
+                return result;
+            }
+            
+            function handleKeyboardInput(e) {
+                e.preventDefault();
+                const key = e.key;
+                
+                if ((key >= '0' && key <= '9') || key === '.') {
+                    appendNumber(key);
+                    buttonPressEffect(key);
+                } else if (['+', '-', '*', '/'].includes(key)) {
+                    setOperation(key);
+                    buttonPressEffect(key);
+                } else if (key === 'Enter' || key === '=') {
+                    calculate();
+                    buttonPressEffect('=');
+                } else if (key === 'Escape') {
+                    handleFunction('clear');
+                    buttonPressEffect('AC');
+                } else if (key === '%') {
+                    handleFunction('percentage');
+                    buttonPressEffect('%');
+                } else if (key === 'Backspace') {
+                    currentValue = currentValue.slice(0, -1) || '0';
+                    updateDisplay();
+                }
+            }
+            
+            function buttonPressEffect(value) {
+                let button;
+                
+                // Convert keyboard value to match button values
+                if (value === 'Enter') value = '=';
+                if (value === 'Escape') value = 'clear';
+                if (value === '*') value = '×';
+                if (value === '/') value = '÷';
+                if (value === '-') value = '−'; // Use the correct minus symbol
+                
+                if (isScientific && ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'log', 'ln', 'sqrt', 'fact', 'pow', 'pi', 'e', 'mod', 'exp'].includes(value)) {
+                    button = document.querySelector(`.sci-function-btn[data-value="${value}"]`);
+                } else if (['+', '−', '×', '÷', '='].includes(value)) {
+                    button = document.querySelector(`.operator-btn[data-value="${value}"]`);
+                    if (!button && value === '=') button = document.querySelector('.equals-btn');
+                } else if (['clear', '%', '+/-'].includes(value)) {
+                    button = document.querySelector(`.function-btn[data-value="${value === '+/-' ? 'toggleSign' : value === '%' ? 'percentage' : 'clear'}"]`);
+                } else {
+                    button = document.querySelector(`.number-btn[data-value="${value}"]`);
+                }
+                
+                if (button) {
+                    button.classList.add('button-press');
+                    setTimeout(() => {
+                        button.classList.remove('button-press');
+                    }, 200);
+                }
+            }
+            
+            // Initial display update
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
